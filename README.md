@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SPY เลขเด็ด — เลขท้าย 3 / ท้าย 2 (คงที่)</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#9ca3af;
+    --brand:#f59e0b; --accent:#22d3ee; --bar1a:#7dd3fc; --bar1b:#60a5fa;
+    --bar2a:#c4b5fd; --bar2b:#a78bfa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 500px at 20% -10%, #1f2937 0, transparent 70%),var(--bg);
+       color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans Thai","Tahoma",sans-serif;letter-spacing:.1px}
+  header{padding:28px 20px 10px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand{font-size:clamp(22px,2.6vw,30px);font-weight:800;background:linear-gradient(90deg,var(--brand),#ffeb3b);
+         -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 22px rgba(245,158,11,.25)}
+  .subtitle{color:var(--muted);font-weight:500}
+  .container{max-width:1060px;margin:0 auto;padding:0 16px 40px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08)}
+  .countdown{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(34,211,238,.1);color:var(--accent);
+    border:1px solid rgba(34,211,238,.3);font-weight:700}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));color:var(--ink);font-weight:800;letter-spacing:.2px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 20px}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 16px 14px;position:relative;overflow:hidden}
+  .label{position:absolute;top:12px;left:12px;background:linear-gradient(90deg,#f59e0b,#ffd166);color:#2a1c00;font-weight:900;
+    font-size:13px;padding:6px 10px;border-radius:8px;box-shadow:0 4px 12px rgba(245,158,11,.35)}
+  .bignum{margin-top:36px;text-align:center;font-weight:900;font-size:clamp(28px,6vw,48px);letter-spacing:.08em}
+  .helper{text-align:center;color:var(--muted);margin-top:6px;font-size:13px}
+
+  /* Graph */
+  .graph{margin-top:16px;padding:16px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08)}
+  .barrow{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:14px;margin:18px 0}
+  .barrow .legend{justify-self:end;font-weight:900;color:#111;background:linear-gradient(90deg,#f59e0b,#ffd166);
+    border-radius:999px;padding:6px 10px;border:1px solid rgba(0,0,0,.06)}
+  .bar{height:72px;border-radius:12px;position:relative;overflow:hidden;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08)}
+  .fill{position:absolute;inset:0 auto 0 0;width:0%;border-radius:12px;transition:width .9s cubic-bezier(.2,.8,.2,1);
+    background-size:200% 100%;animation:slide 3s linear infinite}
+  .fill.r1{background-image:linear-gradient(90deg,var(--bar1a),var(--bar1b),var(--bar1a))}
+  .fill.t2{background-image:linear-gradient(90deg,var(--bar2a),var(--bar2b),var(--bar2a))}
+  @keyframes slide{0%{background-position:0% 0}100%{background-position:200% 0}}
+
+  .inbar{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;font-weight:900;
+    text-shadow:0 2px 12px rgba(0,0,0,.35);pointer-events:none}
+  .num{font-size:clamp(22px,4.2vw,40px);animation:pulse 2.2s ease-in-out infinite}
+  .pc{font-size:clamp(14px,2.6vw,18px);opacity:.95;font-weight:800}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+  @media (max-width:800px){.board{grid-template-columns:1fr}.barrow{grid-template-columns:1fr;gap:8px}.barrow .legend{justify-self:start}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">SPY เลขเด็ด</div>
+    <div class="subtitle">วิเคราะห์สถิติย้อนหลังแบบคงที่ (Deterministic)</div>
+  </header>
+
+  <div class="topbar">
+    <div class="countdown">
+      <span class="pill" id="nextLabel">กำลังคำนวณงวดถัดไป…</span>
+      <span id="countDownText">--:--:--</span>
+    </div>
+    <button class="btn" id="btnCalc">คำนวณใหม่</button>
+  </div>
+
+  <section class="board">
+    <div class="card">
+      <div class="label">เลขท้าย 3 ตัว</div>
+      <div class="bignum" id="last3Num">000</div>
+      <div class="helper" id="l3Hint">รวมสถิติรางวัล 1–5 (เฉพาะเลขท้าย 3) • สถิติเลขท้าย 3 ตัวตรงพอ</div>
+    </div>
+
+    <div class="card">
+      <div class="label">ฉลากท้าย 2 เด่น</div>
+      <div class="bignum" id="t2Num">00</div>
+      <div class="helper" id="t2Hint">รวมสถิติรางวัล 1–5 (เฉพาะเลขท้าย 2) • สถิติเลขท้าย 2 ตัวตรงพอ</div>
+    </div>
+  </section>
+
+  <!-- กราฟเดียว -->
+  <section class="graph">
+    <div class="barrow">
+      <div class="legend">เลขท้าย 3 ตัว</div>
+      <div class="bar">
+        <div class="fill r1" id="barL3"></div>
+        <div class="inbar"><div class="num" id="barL3Num">000</div><div class="pc" id="barL3Pc">0.00%</div></div>
+      </div>
+    </div>
+    <div class="barrow">
+      <div class="legend">ฉลากท้าย 2</div>
+      <div class="bar">
+        <div class="fill t2" id="barT2"></div>
+        <div class="inbar"><div class="num" id="barT2Num">00</div><div class="pc" id="barT2Pc">0.00%</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ===== ข้อมูลย้อนหลัง (จำลองแบบคงที่ด้วย seed) ===== */
+let HISTORY_DATA;
+(function makeDeterministicDemo(){
+  if (typeof HISTORY_DATA !== "undefined" && Array.isArray(HISTORY_DATA) && HISTORY_DATA.length) return;
+  const draws = 240; const seed = "SPY-DEFAULT";
+  const rng = LCG(seedHash(seed));
+  const start = new Date(); start.setMonth(start.getMonth()-draws/2);
+  HISTORY_DATA = [];
+  for (let i=0;i<draws;i++){
+    const d = new Date(start.getFullYear(), start.getMonth()+Math.floor(i/2), (i%2===0)?1:16);
+    const p1 = six(rng());
+    const p2 = pickMany(5,rng), p3 = pickMany(10,rng), p4 = pickMany(50,rng), p5 = pickMany(100,rng);
+    HISTORY_DATA.push({date:d.toISOString().slice(0,10),prize1:p1,prize2:p2,prize3:p3,prize4:p4,prize5:p5});
+  }
+  function pickMany(n, rng){ const a=[]; for(let i=0;i<n;i++) a.push(six(rng())); return a }
+  function six(x){ return String(Math.floor(x*1e6)).padStart(6,'0') }
+  function seedHash(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;} return h>>>0 }
+  function LCG(seed){ let a=1664525,c=1013904223,m=2**32,st=seed>>>0; return function(){ st=(a*st+c)%m; return st/m } }
+})();
+
+/* ===== คำนวณสถิติ ===== */
+function computeStats(rows){
+  const last3 = Object.create(null), last2 = Object.create(null);
+  let totLast3=0, totLast2=0;
+  for(const r of rows){
+    const all = [];
+    if (r.prize1) all.push(r.prize1);
+    if (Array.isArray(r.prize2)) all.push(...r.prize2);
+    if (Array.isArray(r.prize3)) all.push(...r.prize3);
+    if (Array.isArray(r.prize4)) all.push(...r.prize4);
+    if (Array.isArray(r.prize5)) all.push(...r.prize5);
+    for(const num of all){
+      const s = String(num).padStart(6,'0');
+      const l3=s.slice(-3), l2=s.slice(-2);
+      last3[l3]=(last3[l3]||0)+1; totLast3++;
+      last2[l2]=(last2[l2]||0)+1; totLast2++;
+    }
+  }
+  const top1 = (map, fallback)=>{ let kBest=fallback,vBest=0; for(const k in map){const v=map[k]; if(v>vBest || (v===vBest && k<kBest)){kBest=k; vBest=v}} return {num:kBest,count:vBest} };
+  return { topLast3:[top1(last3,'000')], topLast2:[top1(last2,'00')], totals:{last3:totLast3,last2:totLast2} };
+}
+
+/* ===== เรนเดอร์ผล & กราฟ ===== */
+function renderAll(){
+  const stats = computeStats(HISTORY_DATA);
+  const l3 = stats.topLast3[0]?.num || "000";
+  const t2 = stats.topLast2[0]?.num || "00";
+  const pL3 = (stats.topLast3[0]?.count || 0) / (stats.totals.last3 || 1);
+  const pT2 = (stats.topLast2[0]?.count || 0) / (stats.totals.last2 || 1);
+
+  // การ์ด
+  document.getElementById('last3Num').textContent = l3;
+  document.getElementById('t2Num').textContent = t2;
+
+  // กราฟ (แอนิเมชันไหล + pulse)
+  setBar('barL3','barL3Num','barL3Pc', l3, pL3);
+  setBar('barT2','barT2Num','barT2Pc', t2, pT2);
+}
+
+function setBar(idFill, idNum, idPc, label, p){
+  const pc = Math.max(0, Math.min(1, p)) * 100;
+  document.getElementById(idFill).style.width = pc.toFixed(2) + '%';
+  document.getElementById(idNum).textContent = label;
+  document.getElementById(idPc).textContent = pc.toFixed(2) + '%';
+}
+
+/* ===== นับถอยหลังงวดถัดไป ===== */
+function getNextDrawInfo(now=new Date()){
+  const y=now.getFullYear(), m=now.getMonth(), d=now.getDate();
+  let target = new Date(y,m,(d<=1?1:(d<=16?16:1)),15,0,0);
+  if(target<=now){ target = (d<=1)? new Date(y,m,16,15,0,0) : (d<=16? new Date(y,m+1,1,15,0,0) : new Date(y,m+1,16,15,0,0)); }
+  const label = target.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  return {target,label};
+}
+function startCountdown(){
+  const lab=document.getElementById('nextLabel'), out=document.getElementById('countDownText');
+  function tick(){
+    const {target,label} = getNextDrawInfo(new Date());
+    lab.textContent = "งวดถัดไป: " + label;
+    const ms = target - new Date(); const s = Math.max(0, Math.floor(ms/1000));
+    const d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    out.textContent = `${String(d).padStart(2,'0')} วัน ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+  tick(); setInterval(tick,1000);
+}
+
+/* ===== ปุ่มคำนวณใหม่ (คงที่) ===== */
+document.getElementById('btnCalc').addEventListener('click', renderAll);
+
+/* ===== เริ่มทำงาน ===== */
+startCountdown();
+renderAll();
+
+/* ===== ยูทิล PRNG ===== */
+function seedHash(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0;} return h>>>0 }
+function LCG(seed){ let a=1664525,c=1013904223,m=2**32,st=seed>>>0; return function(){ st=(a*st+c)%m; return st/m } }
+</script>
+</body>
+</html>
